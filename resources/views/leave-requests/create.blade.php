@@ -44,17 +44,19 @@
                     @endif
                     <form action="{{ route('leave-requests.store') }}" method="POST">
                         @csrf
+                        @if (session('role') == 'HR')
                         <div class="mb-3">
                             <label for="" class="form-label">Employee</label>
                             <select name="employee_id" id="employee_id" class="form-control">
                                 @foreach ($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->fullname }}</option>
+                                <option value="{{ $employee->id }}">{{ $employee->fullname }}</option>
                                 @endforeach
                             </select>
                             @error('employee_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        @endif
 
                         <div class="mb-3">
                             <label for="" class="form-label">Leave Type</label>

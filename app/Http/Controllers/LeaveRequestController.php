@@ -4,12 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\Presence;
 use Illuminate\Http\Request;
+
 
 class LeaveRequestController extends Controller
 {
     public function index() {
-        $leaveRequests = LeaveRequest::all();
+        if (session('role') == 'HR') {
+            $leaveRequests = LeaveRequest::all();
+        } else {
+            $leaveRequests = LeaveRequest::where('employee_id', session('employee_id'))->get();
+        }
         return view('leave-requests.index', compact('leaveRequests'));
     }
 
@@ -19,18 +25,27 @@ class LeaveRequestController extends Controller
     }
 
     public function store(Request $request) {
-        $request->validate([
-            'employee_id' => 'required',
-            'leave_type' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date'
-        ]);
-
-        $request->merge([
+        if (session('role') == 'HR') {
+            $request->validate([
+                'employee_id' => 'required',
+                'leave_type' => 'required|string',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date'
+            ]);
+            $request->merge([
             'status' => 'pending'
-        ]);
+            ]);
+            LeaveRequest::create($request->all());
+        } else {
+            LeaveRequest::create([
+                'employee_id' => session('employee_id'),
+                'leave_type' => $request->leave_type,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'status' => 'pending'
+            ]);
+        }
 
-        LeaveRequest::create($request->all());
         return redirect()->route('leave-requests.index')->with('success', 'Leave request created successfully.');
     }
 
