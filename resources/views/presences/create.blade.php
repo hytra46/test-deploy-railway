@@ -33,17 +33,18 @@
                     </h5>
                 </div>
                 <div class="card-body">
+                    @if (session('role') == 'HR')
                     <form action="{{ route('presences.store') }}" method="POST">
                         @csrf
                         <div class="mb-3">
                             <label for="" class="form-label">Employee</label>
                             <select name="employee_id" id="employee_id" class="form-control">
                                 @foreach ($employees as $employee)
-                                    <option value="{{ $employee->id }}">{{ $employee->fullname }}</option>
+                                <option value="{{ $employee->id }}">{{ $employee->fullname }}</option>
                                 @endforeach
                             </select>
                             @error('employee_id')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
@@ -73,22 +74,76 @@
 
                         <div class="mb-3">
                             <label for="" class="form-label">Status</label>
-                            <select name="status" id="status" id="employee_id" class="form-control">
+                            <select name="status" id="status" class="form-control">
                                 <option value="present">Present</option>
                                 <option value="absent">Absent</option>
                                 <option value="leave">Leave</option>
                             </select>
                             @error('status')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <button type="submit" class="btn btn-primary">Submit</button>
                         <a href="{{ route('presences.index') }}" class="btn btn-secondary">Back to List</a>
                     </form>
+                    @else
+                    <form action="{{ route('presences.store') }}" method="post">
+                        @csrf
+                        <div class="mb-3"><b>Note </b>: Mohon izinkan akses lokasi untuk melakukan presensi.</div>
+                        <div class="mb-3">
+                            <label for="" class="form-label">Latitude</label>
+                            <input type="text" class="form-control" name="latitude" id="latitude" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="" class="form-label">Longitude</label>
+                            <input type="text" class="form-control" name="longitude" id="longitude" required>
+                        </div>
+                        <div class="mb-3">
+                            <iframe src="" width="500" height="300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"></iframe>
+                        </div>
+                        <button class="btn btn-primary" type="submit" id="btn-present" disabled>Present</button>
+                    </form>
+
+                    @endif
                 </div>
             </div>
 
         </section>
     </div>
+
+    <script>
+        const iframe = document.querySelector('iframe');
+
+        const officeLat = -6.310818530118753; //PPKPI
+        const officeLon = 106.8632994532792;
+        const threshold = 0.01;
+
+        navigator.geolocation.getCurrentPosition(function(position){
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            iframe.src = `https://www.google.com/maps?q=${lat},${lon}&output=embed`;
+        });
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position){
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    document.getElementById('latitude').value = lat;
+                    document.getElementById('longitude').value = lon;
+
+                    const distance = Math.sqrt(Math.pow(lat - officeLat, 2) + Math.pow(lon - officeLon, 2));
+
+                    if (distance <= threshold) {
+                        alert('Kamu berada di kantor, selamat bekerja!');
+                        document.getElementById('btn-present').removeAttribute('disabled');
+                    } else {
+                        alert('Kamu tidak berada di kantor, pastikan kamu berada di kantor untuk melakukan presensi');
+                    }
+                });
+            }
+        });
+    </script>
 @endsection

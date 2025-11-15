@@ -13,11 +13,12 @@ use App\Http\Controllers\LeaveRequestController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 Route::middleware('auth')->group(function(){
     Route::get('/dashboard', [DashboardController::class, 'index']) -> name('dashboard')->middleware(['role:HR,Developer,Sales,Data Entry']);
+    Route::get('/dashboard/presence', [DashboardController::class, 'presence']);
 
     Route::resource('/employees', EmployeeController::class)->middleware(['role:HR']);
 
