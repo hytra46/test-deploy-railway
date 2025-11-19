@@ -6,6 +6,9 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
+            // tambahkan base untuk production
+            // pakai APP_URL agar asset selalu HTTPS
+            base: process.env.APP_URL + '/build/',
         }),
     ],
 });
